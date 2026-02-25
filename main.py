@@ -47,6 +47,7 @@ current_selection = 0
 
 keyboard_dev = InputDevice('/dev/input/by-id/usb-Keychron_Keychron_K6_Pro-event-kbd')
 super_held = False
+local = None
 
 for event in keyboard_dev.read_loop():
     if event.type == ecodes.EV_KEY:
@@ -63,7 +64,9 @@ for event in keyboard_dev.read_loop():
         elif key_event.keycode == 'KEY_APOSTROPHE' and event.value == 1 and super_held:
             data, sample_rate = sf.read(os.path.join('sounds', sound_files[current_selection]))
             sd.play(data, sample_rate, device=device['index'])
+            local = subprocess.Popen(["paplay", os.path.join('sounds', sound_files[current_selection])])
             print('Playing', sound_files[current_selection])
         elif key_event.keycode == 'KEY_SEMICOLON' and event.value == 1 and super_held:
             sd.stop()
+            if local: local.kill(); local = None
             print('Stopped playback')
